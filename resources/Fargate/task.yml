@@ -1,0 +1,86 @@
+Parameters:
+  Image:
+    Type: String
+    Default: murali44/sqs_message_printer
+  ServiceName:
+    Type: String
+    Default: ${self:custom.stage}-fargateScalingDemo
+  # for autoscaling
+  MinContainers:
+    Type: Number
+    Default: 0
+  # for autoscaling
+  MaxContainers:
+    Type: Number
+    Default: 10
+  # target CPU utilization (%)
+  AutoScalingTargetValue:
+    Type: Number
+    Default: 50
+Resources:
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Join ['-', [!Ref ServiceName, Cluster]]
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    DependsOn: LogGroup
+    Properties:
+      # Name of the task definition. Subsequent versions of the task definition are grouped together under this name.
+      Family: !Join ['-', [!Ref ServiceName, TaskDefinition]]
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: 1024
+      Memory: 2GB
+      ExecutionRoleArn: !Ref ExecutionRole
+      TaskRoleArn: !Ref TaskRole
+      Tags:
+        - Key: Task_FAMILY
+          Value: fargate-demo
+        - Key: TaskDefinition
+          Value: !Join ['-', [!Ref ServiceName, TaskDefinition]]
+      ContainerDefinitions:
+        - Name: !Ref ServiceName
+          Image: !Ref Image
+          Environment:
+            - Name: QUEUE_URL
+              Value: !Ref fargateScalingQueue
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref LogGroup
+              awslogs-stream-prefix: ecs
+  Service:
+    Type: AWS::ECS::Service
+    Properties: 
+      ServiceName: !Ref ServiceName
+      Cluster: !Ref Cluster
+      TaskDefinition: !Ref TaskDefinition
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 100
+        MaximumPercent: 200
+      # Desired count should be 0; Else the Task Scheduler will restart containers once they stop 
+      # to maintain the number of containers mentioned here.
+      DesiredCount: 0
+      # This may need to be adjusted if the container takes a while to start up
+      #HealthCheckGracePeriodSeconds: 30
+      LaunchType: FARGATE
+      PlatformVersion: 1.4.0
+      NetworkConfiguration: 
+        AwsvpcConfiguration:
+          # change to DISABLED if you're using private subnets that have access to a NAT gateway
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !Ref PublicSubnetA
+            - !Ref PublicSubnetB
+          SecurityGroups:
+            - !Ref ClusterSecurityGroup
+  
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ['', ['/aws/ecs/', !Ref ServiceName,'-',Task]]
+      RetentionInDays: ${self:provider.logRetentionInDays}
+  

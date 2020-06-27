@@ -1,0 +1,86 @@
+Resources:
+  QueueDepthAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: ${self:custom.stage}-QueueDepthAlarm#1
+      AlarmDescription: "Alarm if queue depth grows beyond 1 messages"
+      Namespace: "AWS/SQS"
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value : !GetAtt fargateScalingQueue.QueueName
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - Ref: FargateScalingTopic
+  QueueDepthAlarm100:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: ${self:custom.stage}-QueueDepthAlarm#100
+      AlarmDescription: "Alarm if queue depth grows beyond 100 messages"
+      Namespace: "AWS/SQS"
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value : !GetAtt fargateScalingQueue.QueueName
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 100
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - Ref: FargateScalingTopic
+  QueueDepthAlarm250:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: ${self:custom.stage}-QueueDepthAlarm#250
+      AlarmDescription: "Alarm if queue depth grows beyond 250 messages"
+      Namespace: "AWS/SQS"
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value : !GetAtt fargateScalingQueue.QueueName
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 250
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - Ref: FargateScalingTopic
+  QueueDepthAlarm500:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: ${self:custom.stage}-QueueDepthAlarm#500
+      AlarmDescription: "Alarm if queue depth grows beyond 500 messages"
+      Namespace: "AWS/SQS"
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value : !GetAtt fargateScalingQueue.QueueName
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 500
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - Ref: FargateScalingTopic
+  QueueDepthAlarm1000:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: ${self:custom.stage}-QueueDepthAlarm#1000
+      AlarmDescription: "Alarm if queue depth grows beyond 1000 messages"
+      Namespace: "AWS/SQS"
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value : !GetAtt fargateScalingQueue.QueueName
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1000
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - Ref: FargateScalingTopic

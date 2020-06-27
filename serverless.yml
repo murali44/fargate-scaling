@@ -1,0 +1,77 @@
+service: scaling-fargate
+Description: Scaling fargate based on SQS depth.
+
+frameworkVersion: '>=1.65.0 <=1.74.0'
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: us-east-1 # N. Virginia
+  pythonRequirements:
+    dockerizePip: true
+  deletionPolicy:
+    dev: Delete
+    prod: Retain
+  logRetention:
+    prod: 180
+    default: 14
+
+
+provider:
+  name: aws
+  runtime: python3.7
+  stage: dev
+  region: ${self:custom.region.${self:custom.stage}, self:custom.region.default}
+  stackTags:
+    APP: Fargate Scaling Demo
+    STAGE: ${self:custom.stage}
+  logs:
+    restApi: true
+  logRetentionInDays: ${self:custom.logRetention.${self:custom.stage}, self:custom.logRetention.default}
+
+package:
+  exclude:
+    - node_modules/**
+    - set_env_vars.sh
+    - package.json
+    - package-lock.json
+    - test/**
+    - README.md
+
+functions:
+  ScaleFargate:
+    name: ${self:custom.stage}-ScaleFargate
+    description: Handle SQS queue alarms to scale Fargate tasks.
+    handler: src/fargate_scaler.handle_alarm
+    memorySize: 256
+    timeout: 15
+    role: FargateScalingRole
+    events:
+      - sns: 
+          arn: !Ref FargateScalingTopic
+          topicName: ${self:custom.stage}-Scaling
+    environment:
+      FARGATE_CLUSTER_ARN:
+        Fn::GetAtt: [ Cluster, Arn ]
+      FARGATE_TASK_DEFINITION: !Ref TaskDefinition
+      FARGATE_PLATFORM_VERSION: '1.4.0'
+      FARGATE_SUBNETS:
+        !Join [',', [!Ref PublicSubnetA, !Ref PublicSubnetB]]
+      FARGATE_SECURITYGROUP: !Ref ClusterSecurityGroup
+
+resources:
+  - ${file(resources/stackinfo.yml)}
+  # VPC
+  - ${file(resources/VPC/vpc.yml)}
+  - ${file(resources/VPC/subnets.yml)}
+  - ${file(resources/VPC/vpcendpoints.yml)}
+  # IAM
+  - ${file(resources/IAM/FargateRoles.yml)}
+  - ${file(resources/IAM/FargateScalingRole.yml)}
+  # Fargate
+  - ${file(resources/Fargate/task.yml)}
+  # CloudWatch
+  - ${file(resources/CloudWatch/SQSAlarm.yml)}
+  # SNS
+  - ${file(resources/SNS/SNSTopics.yml)}
+  # SQS
+  - ${file(resources/SQS/sqs.yml)}

@@ -1,0 +1,16 @@
+Resources:
+  FargateScalingTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: 'Topic for Scaling Fargate tasks'
+        TopicName: ${self:custom.stage}-Scaling
+        Tags:
+          - Key: Stack
+            Value: ${self:custom.stage}
+
+Outputs:
+  FargateScalingTopicARN:
+    Description: 'FargateScalingTopicARN'
+    Value: !Ref FargateScalingTopic
+    Export:
+      Name: '${self:custom.stage}-ScalingARN'

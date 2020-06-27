@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:        
+  PublicSubnetA:
+    DependsOn: VPC
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: !Sub '10.0.0.0/24'
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: !Join
+                 - '_'
+                 - - ${self:custom.stage}
+                   - 'PublicSubnetA'
+      - Key: Reach
+        Value: public
+
+  PublicSubnetB:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: !Select [1, !GetAZs '']
+      CidrBlock: !Sub '10.0.1.0/24'
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: !Join
+                 - '_'
+                 - - ${self:custom.stage}
+                   - 'PublicSubnetB'
+      - Key: Reach
+        Value: public
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags: 
+      - Key: Name
+        Value: !Join
+                 - '_'
+                 - - ${self:custom.stage}
+                   - 'PublicRouteTable'
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref 'PublicRouteTable'
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref 'InternetGateway'
+
+  SubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnetA
+
+  SubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnetB
+
+Outputs:      
+  PublicSubnets:
+    Description: 'Public Subnets for fargate tasks'
+    Value: !Join [',', [!Ref PublicSubnetA, !Ref PublicSubnetB]]
+    Export:
+      Name: '${self:custom.stage}-PublicSubnets'
+      
+  PublicSubnetA:
+    Description: 'Public Subnet A for fargate tasks'
+    Value: !Ref PublicSubnetA
+    Export:
+      Name: ${self:custom.stage}-PublicSubnetA
+
+  PublicSubnetB:
+    Description: 'Public Subnet B for fargate tasks'
+    Value: !Ref PublicSubnetB
+    Export:
+      Name: ${self:custom.stage}-PublicSubnetB

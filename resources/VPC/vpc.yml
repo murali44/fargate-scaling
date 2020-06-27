@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Sub '10.0.0.0/16'
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+      - Key: Name
+        Value: ${self:custom.stage}-VPC
+  
+  ClusterSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: !Ref 'AWS::StackName'
+      VpcId: !Ref VPC
+      SecurityGroupEgress:
+      - IpProtocol: -1
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: -1
+        CidrIpv6: ::/0
+      Tags:
+      - Key: Name
+        Value: ${self:custom.stage}-sg
+
+  InternetGateway: 
+    Type: AWS::EC2::InternetGateway
+    Properties: 
+        Tags: 
+        - Key: Name
+          Value: ${self:custom.stage}-igw
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  #EgressRouteAIPV6:
+  #  Type: "AWS::EC2::Route"
+  #  DependsOn: EgressOnlyInternetGateway
+  #  Properties:
+  #    RouteTableId: !Ref SubnetARouteTable
+  #    DestinationIpv6CidrBlock: ::/0
+  #    EgressOnlyInternetGatewayId: !Ref EgressOnlyInternetGateway
+#
+  #EgressRouteBIPV6:
+  #  Type: "AWS::EC2::Route"
+  #  DependsOn: EgressOnlyInternetGateway
+  #  Properties:
+  #    RouteTableId: !Ref SubnetBRouteTable
+  #    DestinationIpv6CidrBlock: ::/0
+  #    EgressOnlyInternetGatewayId: !Ref EgressOnlyInternetGateway
+
+  #EgressRouteAIPV4:
+  #  Type: "AWS::EC2::Route"
+  #  DependsOn: EgressOnlyInternetGateway
+  #  Properties:
+  #    RouteTableId: !Ref SubnetARouteTable
+  #    DestinationCidrBlock: 0.0.0.0/0
+  #    EgressOnlyInternetGatewayId: !Ref EgressOnlyInternetGateway
+#
+  #EgressRouteBIPV4:
+  #  Type: "AWS::EC2::Route"
+  #  DependsOn: EgressOnlyInternetGateway
+  #  Properties:
+  #    RouteTableId: !Ref SubnetBRouteTable
+  #    DestinationCidrBlock: 0.0.0.0/0
+  #    EgressOnlyInternetGatewayId: !Ref EgressOnlyInternetGateway
+
+Outputs:
+  VPC:
+    Description: 'VPC'
+    Value: !Ref VPC
+    Export:
+      Name: '${self:custom.stage}-VPC'

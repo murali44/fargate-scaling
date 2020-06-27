@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  # Secrets Manager VPC Endpoint configuration
+  SecretsManagerVPCEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties: 
+      ServiceName: com.amazonaws.${self:provider.region}.secretsmanager
+      PrivateDnsEnabled: true
+      SecurityGroupIds: 
+        - !Ref ClusterSecurityGroup
+      SubnetIds: 
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+      VpcEndpointType: "Interface"
+      VpcId: !Ref VPC
+
+  SecretsManagerSGIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    DependsOn: ClusterSecurityGroup
+    Properties: 
+      Description: "Secrets Manager port access from within Self Reference"
+      FromPort: '443'
+      GroupId: !Ref ClusterSecurityGroup
+      IpProtocol: tcp
+      SourceSecurityGroupId: !Ref ClusterSecurityGroup
+      ToPort: '443'
+
+  # SQS VPC Endpoint configuration
+  SQSEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.${self:provider.region}.sqs
+      SubnetIds:
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+      VpcId: !Ref VPC
+      VpcEndpointType: Interface
+      SecurityGroupIds:
+        - !Ref ClusterSecurityGroup
+      PrivateDnsEnabled: true
+
+  # CloudWatch VPC Endpoint configuration
+  CloudWatchEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.${self:provider.region}.logs
+      SubnetIds:
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+      VpcId: !Ref VPC
+      VpcEndpointType: Interface
+      SecurityGroupIds:
+        - !Ref ClusterSecurityGroup
+      PrivateDnsEnabled: true

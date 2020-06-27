@@ -1,0 +1,32 @@
+Resources:
+  fargateScalingQueue:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: ${self:custom.stage}-fargateScaling
+      ReceiveMessageWaitTimeSeconds: 20
+      VisibilityTimeout: 1200 # 20 minutes
+      MessageRetentionPeriod: 1209600 # 14 Days
+      Tags:
+      - Key: Stack
+        Value: ${self:custom.stage}
+
+
+Outputs:
+  fargateScalingQueueURL:
+    Description: 'fargateScalingQueueURL'
+    Value: !Ref fargateScalingQueue
+    Export:
+      Name: '${self:custom.stage}-fargateScalingQueueURL'
+  fargateScalingQueueName:
+    Description: 'fargateScalingQueueName'
+    Value:
+      Fn::GetAtt: [fargateScalingQueue, QueueName]
+    Export:
+      Name: '${self:custom.stage}-fargateScalingQueueName'
+  fargateScalingQueueARN:
+    Description: 'fargateScalingQueueARN'
+    Value:
+      Fn::GetAtt: [fargateScalingQueue, Arn]
+    Export:
+      Name: '${self:custom.stage}-fargateScalingQueueARN'
+      
