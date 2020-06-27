@@ -24,7 +24,7 @@ docker build  -t <Docker_Repo>/<Image_Name> .
 docker push <Docker_Repo>/<Image_Name> 
 ```
 
-Next, update the docker [image name]() in the Fargate resource file.
+Next, update the docker [image name](https://github.com/murali44/fargate-scaling/blob/master/resources/Fargate/task.yml#L4) in the Fargate resource file.
 
 ## Architecture
 
