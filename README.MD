@@ -1,13 +1,15 @@
+## Requirements
+
+* Serverless Framework
+* Docker
 
 ## Deployment
 
-In the root directory, use the following command to deploy.
+Run the following command in the root directory to deploy.
 
 `sls deploy -v --stage <stage_name>`
 
-_Note: Replace the stage variable to your name._  All deployed AWS resources are prefixed with the stage name to help identify resources belonging to a particular stage or developer.
-
-By default all stages except 'prod' are deployed to us-west-2 (Oregon). Only 'prod' gets deployed to us-east-2 (Ohio).
+_Note: Replace the stage variable to your stage name._
 
 ## Docker image
 
