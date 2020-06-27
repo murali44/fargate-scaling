@@ -21,7 +21,6 @@ Resources:
                 - !GetAtt ExecutionRole.Arn
                 - !GetAtt TaskRole.Arn
             - Action:
-              - ecs:ListTasks
               - ecs:RunTask
               Effect: Allow
               Resource: "*"

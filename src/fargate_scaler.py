@@ -13,9 +13,7 @@ client = boto3.client('ecs', region_name='us-east-1')
 # Map SQS queue threshold to the number of additional tasks to run
 desired_task_count_map = {
   "1": 1,
-  "100": 1,
-  "250": 1,
-  "500": 2,
+  "100": 2,
   "1000": 5,
 }
 

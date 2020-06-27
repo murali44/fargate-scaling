@@ -4,8 +4,6 @@
     "version": "0.1.0",
     "dependencies": {},
     "devDependencies": {
-        "serverless-fargate-plugin": "^1.2.2",
-        "serverless-fargate-tasks": "^0.4.1",
         "serverless-python-requirements": "^5.1.0"
     }
 }
